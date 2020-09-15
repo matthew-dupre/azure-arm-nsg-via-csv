@@ -1,0 +1,2 @@
+name,description,priority,access,direction,protocol,sourceAddressPrefix,sourceAddressPrefixes,sourceApplicationSecurityGroups,sourcePortRange,sourcePortRanges,destinationAddressPrefix,destinationAddressPrefixes,destinationApplicationSecurityGroups,destinationPortRange,destinationPortRanges
+O-L-UI_Layer-App_Layer-T,Allow HTTPS traffic outbound from UI Layer to App Layer.,1110,Allow,Outbound,Tcp,,*,,*,,,10.20.0.0/24,,,443
