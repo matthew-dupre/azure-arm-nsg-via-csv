@@ -16,21 +16,6 @@
             },
             "type": "object"
         },
-        "diagnosticsInfo": {
-            "type": "object",
-            "defaultValue": {
-                "storageAccountResourceGroupName": "",
-                "storageAccountName": ""
-            }
-        },
-        "logAnalyticsWorkspaceInfo": {
-            "type": "object",
-            "defaultValue": {
-                "subscriptionId": "",
-                "resourceGroupName": "",
-                "workspaceName": ""
-            }
-        },
         "applicationSecurityGroups": {
             "type": "array",
             "defaultValue": [
@@ -342,40 +327,6 @@
                 "name": "applicationSecurityGroupCopy",
                 "count": "[length(variables('allApplicationSecurityGroups'))]"
             }
-        },
-        {
-            "type": "Microsoft.Network/networkSecurityGroups/providers/diagnosticSettings",
-            "name": "[concat(parameters('nsgName'), '/microsoft.insights/', parameters('logAnalyticsWorkspaceInfo').workspaceName)]",
-            "apiVersion": "2017-05-01-preview",
-            "properties": {
-                "name": "[parameters('logAnalyticsWorkspaceInfo').workspaceName]",
-                "storageAccountId": "[resourceId(parameters('diagnosticsInfo').storageAccountResourceGroupName, 'Microsoft.Storage/storageAccounts/', parameters('diagnosticsInfo').storageAccountName)]",
-                "workspaceId": "[resourceId(parameters('logAnalyticsWorkspaceInfo').subscriptionId, parameters('logAnalyticsWorkspaceInfo').resourceGroupName, 'Microsoft.OperationalInsights/workspaces', parameters('logAnalyticsWorkspaceInfo').workspaceName)]",
-                "logs": [
-                    {
-                        "category": "NetworkSecurityGroupEvent",
-                        "enabled": true,
-                        "retentionPolicy": {
-                            "days": 0,
-                            "enabled": false
-                        }
-                    },
-                    {
-                        "category": "NetworkSecurityGroupRuleCounter",
-                        "enabled": true,
-                        "retentionPolicy": {
-                            "days": 0,
-                            "enabled": false
-                        }
-                    }
-                ],
-                "metrics": [
-                ],
-                "logAnalyticsDestinationType": "Dedicated"
-            },
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups/', parameters('nsgName'))]"
-            ]
         }
     ],
     "outputs": {
