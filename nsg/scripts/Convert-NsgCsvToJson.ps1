@@ -101,7 +101,7 @@ $reshapedSecurityRulesObject = $nsgCsvFileObject | ForEach-Object {
 }
 
 # Write the output File
-switch ($CsvFileType) {
+switch ($JsonFileType) {
     "Parameters" {
         if (-not (Test-Path -Path $JsonFile -PathType Leaf)) {
             Write-Host "Path $JsonFile Does not exist"
