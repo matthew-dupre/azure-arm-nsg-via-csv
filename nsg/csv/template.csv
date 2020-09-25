@@ -1,5 +1,5 @@
 name,description,priority,access,direction,protocol,sourceAddressPrefix,sourceAddressPrefixes,sourceApplicationSecurityGroups,sourcePortRange,sourcePortRanges,destinationAddressPrefix,destinationAddressPrefixes,destinationApplicationSecurityGroups,destinationPortRange,destinationPortRanges
-I-B-AzureLoadBalancer_HttpHttps-HttpASG-T,Allow HTTP + HTTPS traffic inbound from Azure Load Balancers. This shows use of Service Tags,1110,Allow,Inbound,Tcp,,AzureLoadBalancer,,*,,,,http,,80|443
+I-B-AzureLoadBalancer_HttpHttps-HttpASG-T,Allow HTTP + HTTPS traffic inbound from Azure Load Balancers. This shows use of Service Tags,1110,Allow,Inbound,Tcp,AzureLoadBalancer,,,*,,,,http,,80|443
 I-B-WindowsGateways-WindowsASG-T,Allow RDP traffic from gateways,1122,Allow,Inbound,Tcp,,10.10.0.0/30|10.110.0.0/30,,*,,,,windows,,3389
 I-B-DenyVnetInbound-A,Deny inbound traffic from all VMs in VNET. Switch to a Default Deny posture. This overrides a default rule.,4000,Deny,Inbound,*,VirtualNetwork,,,*,,VirtualNetwork,,,*,
 O-B-VNET-DNS-A,Access to Internal DNS Servers,1100,Allow,Outbound,*,*,,,*,,,"10.0.0.0/30",,,53|123
