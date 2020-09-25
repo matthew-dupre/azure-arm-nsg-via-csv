@@ -1,10 +1,10 @@
 name,description,priority,access,direction,protocol,sourceAddressPrefix,sourceAddressPrefixes,sourceApplicationSecurityGroups,sourcePortRange,sourcePortRanges,destinationAddressPrefix,destinationAddressPrefixes,destinationApplicationSecurityGroups,destinationPortRange,destinationPortRanges
 I-B-AzureLoadBalancer_HttpHttps-HttpASG-T,Allow HTTP + HTTPS traffic inbound from Azure Load Balancers. This shows use of Service Tags,1110,Allow,Inbound,Tcp,AzureLoadBalancer,,,*,,,,http,,80|443
-I-B-WindowsGateways-WindowsASG-T,Allow RDP traffic from gateways,1122,Allow,Inbound,Tcp,,10.10.0.0/30|10.110.0.0/30,,*,,,,windows,,3389
+I-B-WindowsGateways-WindowsASG-T,Allow RDP traffic from gateways,1122,Allow,Inbound,Tcp,,10.0.5.0/24|10.110.5.0/24,,*,,,,windows,,3389
 I-B-DenyVnetInbound-A,Deny inbound traffic from all VMs in VNET. Switch to a Default Deny posture. This overrides a default rule.,4000,Deny,Inbound,*,VirtualNetwork,,,*,,VirtualNetwork,,,*,
-O-B-VNET-DNS-A,Access to Internal DNS Servers,1100,Allow,Outbound,*,*,,,*,,,"10.0.0.0/30",,,53|123
-O-B-WindowsASG-DomainControllers-T,Access to AD from Windows Machines over TCP. Port ranges are incomplete.,1195,Allow,Outbound,Tcp,,,windows,*,,,10.0.0.0/30|10.100.0.0/30,,,53|88|135|139|389|445
-O-B-WindowsASG-DomainControllers-U,Access to AD from Windows Machines over UDP. Port ranges are incomplete.,1196,Allow,Outbound,Udp,,,windows,*,,,10.0.0.0/30|10.100.0.0/30,,,53|88|123|137-138|389
-O-B-WindowsASG-DomainControllers-I,Access to AD from Windows Machines over ICMP,1197,Allow,Outbound,Icmp,,,windows,*,,,10.0.0.0/30|10.100.0.1/30,,*,
+O-B-VNET-DNS-A,Access to Internal DNS Servers,1100,Allow,Outbound,*,*,,,*,,,10.0.3.0/30|10.100.3.0/30,,,53|123
+O-B-WindowsASG-DomainControllers-T,Access to AD from Windows Machines over TCP. Port ranges are incomplete.,1195,Allow,Outbound,Tcp,,,windows,*,,,10.0.2.0/30|10.100.2.0/30,,,53|88|135|139|389|445
+O-B-WindowsASG-DomainControllers-U,Access to AD from Windows Machines over UDP. Port ranges are incomplete.,1196,Allow,Outbound,Udp,,,windows,*,,,10.0.2.0/30|10.100.2.0/30,,,53|88|123|137-138|389
+O-B-WindowsASG-DomainControllers-I,Access to AD from Windows Machines over ICMP,1197,Allow,Outbound,Icmp,,,windows,*,,,10.0.2.0/30|10.100.2.0/30,,*,
 O-B-DenyVnetOutBound-A,Deny outbound traffic from all VMs to all VMs in VNET. Switch to Default Deny posture. This overrides a default rule,4000,Deny,Outbound,*,VirtualNetwork,,,*,,VirtualNetwork,,,*,
 O-B-DenyInternetOutbound-A,Deny outbound traffic from all VMs to Internet. Switch to Default Deny posture. This overrides a default rule that allows this traffic,4001,Deny,Outbound,*,*,,,*,,*,,,*,

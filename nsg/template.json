@@ -163,8 +163,8 @@
           "protocol": "Tcp",
           "sourceAddressPrefix": "",
           "sourceAddressPrefixes": [
-            "10.10.0.0/30",
-            "10.110.0.0/30"
+            "10.0.5.0/24",
+            "10.110.5.0/24"
           ],
           "sourceApplicationSecurityGroups": null,
           "sourcePortRange": "*",
@@ -211,7 +211,8 @@
           "sourcePortRanges": null,
           "destinationAddressPrefix": "",
           "destinationAddressPrefixes": [
-            "10.0.0.0/30"
+            "10.0.3.0/30",
+            "10.100.3.0/30"
           ],
           "destinationApplicationSecurityGroups": null,
           "destinationPortRange": "",
@@ -236,8 +237,8 @@
           "sourcePortRanges": null,
           "destinationAddressPrefix": "",
           "destinationAddressPrefixes": [
-            "10.0.0.0/30",
-            "10.100.0.0/30"
+            "10.0.2.0/30",
+            "10.100.2.0/30"
           ],
           "destinationApplicationSecurityGroups": null,
           "destinationPortRange": "",
@@ -266,8 +267,8 @@
           "sourcePortRanges": null,
           "destinationAddressPrefix": "",
           "destinationAddressPrefixes": [
-            "10.0.0.0/30",
-            "10.100.0.0/30"
+            "10.0.2.0/30",
+            "10.100.2.0/30"
           ],
           "destinationApplicationSecurityGroups": null,
           "destinationPortRange": "",
@@ -295,8 +296,8 @@
           "sourcePortRanges": null,
           "destinationAddressPrefix": "",
           "destinationAddressPrefixes": [
-            "10.0.0.0/30",
-            "10.100.0.1/30"
+            "10.0.2.0/30",
+            "10.100.2.0/30"
           ],
           "destinationApplicationSecurityGroups": null,
           "destinationPortRange": "*",

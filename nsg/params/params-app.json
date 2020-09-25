@@ -31,7 +31,7 @@
           "protocol": "Tcp",
           "sourceAddressPrefix": "",
           "sourceAddressPrefixes": [
-            "10.20.0.0/24"
+            "10.1.0.0/24"
           ],
           "sourceApplicationSecurityGroups": null,
           "sourcePortRange": "*",
@@ -62,7 +62,7 @@
           "sourcePortRanges": null,
           "destinationAddressPrefix": "",
           "destinationAddressPrefixes": [
-            "10.20.2.0/24"
+            "10.1.2.0/24"
           ],
           "destinationApplicationSecurityGroups": null,
           "destinationPortRange": "",
