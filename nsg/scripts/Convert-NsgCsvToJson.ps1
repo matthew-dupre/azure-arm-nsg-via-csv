@@ -99,9 +99,6 @@ $reshapedSecurityRulesObject = $nsgCsvFileObject | ForEach-Object {
 }
 
 # Write the output File
-
-
-
 switch ($JsonFileType) {
     "Parameters" {
         if (-not (Test-Path -Path $JsonFile -PathType Leaf)) {

@@ -84,7 +84,7 @@ function Format-ExportASG ([object] $asgDetailsObject ) {
     }
     else {
         $asgIdValue = $asgDetailsObject.id
-         # Azure Resource Ids are segments separated by '/', in this scenario the last segment is the ASG name.
+        # Azure Resource Ids are segments separated by '/', in this scenario the last segment is the ASG name.
         $asgIdSlashSplit = $asgIdValue.Split("/")
         $asgNameSegment = $asgIdSlashSplit[$asgIdSlashSplit.Length - 1]
         #In our naming scheme - the 8th postion contains the unique ASG Segment: ais-use-pd-cto-net-vnt-01-windows-asg
@@ -94,21 +94,20 @@ function Format-ExportASG ([object] $asgDetailsObject ) {
 }
 
 $jsonFileContent = Get-Content $JsonFile -Raw | ConvertFrom-Json -Depth 100
-switch ($JsonFileType)
-{
-  "Parameters" {
-    $nsgSecurityRulesJson = $jsonFileContent.parameters.networkSecurityGroupSecurityRules.value
-  }
-  "Template" {
-    $nsgSecurityRulesJson = $jsonFileContent.variables.nsgSecurityRules.baseline
-  }
-  Default {
-    $nsgSecurityRulesJson = $jsonFileContent
-  }
+switch ($JsonFileType) {
+    "Parameters" {
+        $nsgSecurityRulesJson = $jsonFileContent.parameters.networkSecurityGroupSecurityRules.value
+    }
+    "Template" {
+        $nsgSecurityRulesJson = $jsonFileContent.variables.nsgSecurityRules.baseline
+    }
+    Default {
+        $nsgSecurityRulesJson = $jsonFileContent
+    }
 }
 
 # Select data from the Json input in the structure defined for the Csv Object.
-$reshapedSecurityRulesJson = $nsgSecurityRulesJson |  Select-Object  `
+$reshapedSecurityRulesJson = $nsgSecurityRulesJson | Select-Object  `
 @{name = "name"; expression = { Format-StringValue $_.name } },
 @{name = "description"; expression = { Format-StringValue $_.description } },
 priority,
