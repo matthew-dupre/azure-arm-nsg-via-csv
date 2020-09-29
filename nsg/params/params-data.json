@@ -1,0 +1,50 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "nsgName": {
+      "value": "AIS-"
+    },
+    "networkInfo": {
+      "value": {
+        "vnetName": "",
+        "subnetName": "data",
+        "subnetAddressPrefix": "10.0.3.0/28"
+      }
+    },
+    "applicationSecurityGroups": {
+      "value": [
+        {
+          "name": "example1-data",
+          "description": "Data Tier Servers for App Example1"
+        }
+      ]
+    },
+    "networkSecurityGroupSecurityRules": {
+      "value": [
+        {
+          "name": "I-L-App_Layer-Data_Layer-T",
+          "description": "Allow SQL Server traffic inbound from App Layer to Data Layer.",
+          "priority": 1110,
+          "access": "Allow",
+          "direction": "Inbound",
+          "protocol": "Tcp",
+          "sourceAddressPrefix": "",
+          "sourceAddressPrefixes": [
+            "10.1.1.0/24"
+          ],
+          "sourceApplicationSecurityGroups": null,
+          "sourcePortRange": "*",
+          "sourcePortRanges": null,
+          "destinationAddressPrefix": "*",
+          "destinationAddressPrefixes": null,
+          "destinationApplicationSecurityGroups": null,
+          "destinationPortRange": "",
+          "destinationPortRanges": [
+            "1433"
+          ]
+        }
+      ]
+    }
+  }
+}

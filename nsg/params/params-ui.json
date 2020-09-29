@@ -29,10 +29,8 @@
           "access": "Allow",
           "direction": "Inbound",
           "protocol": "Tcp",
-          "sourceAddressPrefix": "",
-          "sourceAddressPrefixes": [
-            "AzureLoadBalancer"
-          ],
+          "sourceAddressPrefix": "AzureLoadBalancer",
+          "sourceAddressPrefixes": null,
           "sourceApplicationSecurityGroups": null,
           "sourcePortRange": "*",
           "sourcePortRanges": null,
@@ -52,10 +50,8 @@
           "access": "Allow",
           "direction": "Outbound",
           "protocol": "Tcp",
-          "sourceAddressPrefix": "",
-          "sourceAddressPrefixes": [
-            "*"
-          ],
+          "sourceAddressPrefix": "*",
+          "sourceAddressPrefixes": null,
           "sourceApplicationSecurityGroups": null,
           "sourcePortRange": "*",
           "sourcePortRanges": null,

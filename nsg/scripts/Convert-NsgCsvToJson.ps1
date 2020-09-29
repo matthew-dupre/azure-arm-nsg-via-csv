@@ -1,7 +1,7 @@
 #requires -version 7
 <#
 .SYNOPSIS
-  Converts a Azure NSG security rules in CSV format into an ARM Template Json Output.
+  Converts Azure Network Security Group (NSG) security rules in CSV format into an ARM Template Json Output.
 .DESCRIPTION
   Takes a CSV containing NSG Security Rules information, converts it to the ARM template Json format, 
   and places the output array into the appropriate location. The result of this is a Json template or 
@@ -29,9 +29,7 @@
   Creation Date:  2020/09/15
   Purpose/Change: Initial script development
 .EXAMPLE
-  <Example explanation goes here>
-  
-  <Example goes here. Repeat this attribute for more than one example>
+
 #>
 
 #---------------------------------------------------------[Script Parameters]------------------------------------------------------
@@ -121,8 +119,8 @@ switch ($JsonFileType) {
         # Read the contents of the destination file as Json
         $nsgTemplateFileData = Get-Content $JsonFile -Raw | ConvertFrom-Json -Depth 100 -NoEnumerate
         # Replace the contents of the networkSecurityGroupSecurityRules Array
-        $nsgTemplateFileData.variables.nsgSecurityRules.baseline.value = [array] $reshapedSecurityRulesObject
-        $nsgTemplateJson = ConvertTo-Json -InputObject $nsgParamsFnsgTemplateFileDataileData -Depth 10
+        $nsgTemplateFileData.variables.nsgSecurityRules.baseline = [array] $reshapedSecurityRulesObject
+        $nsgTemplateJson = ConvertTo-Json -InputObject $nsgTemplateFileData -Depth 10
         # Write the Json File
         $nsgTemplateJson | Set-Content $JsonFile
     }

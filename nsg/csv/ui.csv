@@ -1,3 +1,3 @@
 name,description,priority,access,direction,protocol,sourceAddressPrefix,sourceAddressPrefixes,sourceApplicationSecurityGroups,sourcePortRange,sourcePortRanges,destinationAddressPrefix,destinationAddressPrefixes,destinationApplicationSecurityGroups,destinationPortRange,destinationPortRanges
-I-L-All_HttpHttps-UI_Layer-T,Allow HTTP + HTTPS traffic inbound.,1110,Allow,Inbound,Tcp,,AzureLoadBalancer,,*,,*,,,,80|443
-O-L-UI_Layer-App_Layer-T,Allow HTTPS traffic outbound from UI Layer to App Layer.,1110,Allow,Outbound,Tcp,,*,,*,,,10.20.0.0/24,,,443
+I-L-All_HttpHttps-UI_Layer-T,Allow HTTP + HTTPS traffic inbound.,1110,Allow,Inbound,Tcp,AzureLoadBalancer,,,*,,*,,,,80|443
+O-L-UI_Layer-App_Layer-T,Allow HTTPS traffic outbound from UI Layer to App Layer.,1110,Allow,Outbound,Tcp,*,,,*,,,10.1.1.0/24,,,443
