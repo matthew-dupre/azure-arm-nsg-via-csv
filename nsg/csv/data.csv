@@ -1,2 +1,2 @@
 name,description,priority,access,direction,protocol,sourceAddressPrefix,sourceAddressPrefixes,sourceApplicationSecurityGroups,sourcePortRange,sourcePortRanges,destinationAddressPrefix,destinationAddressPrefixes,destinationApplicationSecurityGroups,destinationPortRange,destinationPortRanges
-I-L-App_Layer-Data_Layer-T,Allow SQL Server traffic inbound from App Layer to Data Layer.,1110,Allow,Inbound,Tcp,,10.1.1.0/24,,*,,*,,,,1433
+I-L-App_Layer-Data_Layer-T,Allow SQL Server traffic inbound from App Layer to Data Layer.,2100,Allow,Inbound,Tcp,,,APP1_APP,*,,,,APP1_DATA,,1433
