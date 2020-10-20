@@ -1,76 +1,80 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
-  "contentVersion": "1.0.0.0",
-  "parameters": {
-    "nsgName": {
-      "value": "AIS-"
-    },
-    "networkInfo": {
-      "value": {
-        "vnetName": "",
-        "subnetName": "app",
-        "subnetAddressPrefix": "10.0.0.1/28"
-      }
-    },
-    "applicationSecurityGroups": {
-      "value": [
-        {
-          "name": "example1",
-          "description": "App Tier Servers for App Example1"
-        }
-      ]
-    },
-    "networkSecurityGroupSecurityRules": {
-      "value": [
-        {
-          "name": "I-L-UI_Layer-App_Layer-T",
-          "description": "Allow HTTPS traffic inbound from UI Layer to App Layer.",
-          "priority": 1110,
-          "access": "Allow",
-          "direction": "Inbound",
-          "protocol": "Tcp",
-          "sourceAddressPrefix": "",
-          "sourceAddressPrefixes": [
-            "10.1.0.0/24"
-          ],
-          "sourceApplicationSecurityGroups": null,
-          "sourcePortRange": "*",
-          "sourcePortRanges": null,
-          "destinationAddressPrefix": "",
-          "destinationAddressPrefixes": null,
-          "destinationApplicationSecurityGroups": [
-            "http"
-          ],
-          "destinationPortRange": "",
-          "destinationPortRanges": [
-            "443"
-          ]
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "nsgName": {
+            "value": "AZ-AIS-APP1-DV-UE-APP-SNT-01-NSG"
         },
-        {
-          "name": "O-L-App_Layer-Database_Layer-T",
-          "description": "Allow SQL Server Outbount from App Layer to UI Layer.",
-          "priority": 1110,
-          "access": "Allow",
-          "direction": "Outbount",
-          "protocol": "Tcp",
-          "sourceAddressPrefix": "",
-          "sourceAddressPrefixes": [
-            "*"
-          ],
-          "sourceApplicationSecurityGroups": null,
-          "sourcePortRange": "*",
-          "sourcePortRanges": null,
-          "destinationAddressPrefix": "",
-          "destinationAddressPrefixes": [
-            "10.1.2.0/24"
-          ],
-          "destinationApplicationSecurityGroups": null,
-          "destinationPortRange": "",
-          "destinationPortRanges": [
-            "1433"
-          ]
+        "networkInfo": {
+            "value": {
+                "vnetName": "AZ-AIS-APP1-DV-UE-VNT-01",
+                "subnetName": "app",
+                "subnetAddressPrefix": "10.0.0.1/28"
+            }
+        },
+        "applicationSecurityGroups": {
+            "value": [
+                {
+                    "name": "APP1_UI",
+                    "description": "UI Tier Servers for example: App1"
+                },
+                {
+                    "name": "APP1_APP",
+                    "description": "App Tier Servers for example: App1"
+                }
+            ]
+        },
+        "networkSecurityGroupSecurityRules": {
+            "value": [
+                {
+                    "name": "I-L-UI_Layer-App_Layer-T",
+                    "description": "Allow HTTPS traffic inbound from UI Layer to App Layer.",
+                    "priority": 2100,
+                    "access": "Allow",
+                    "direction": "Inbound",
+                    "protocol": "Tcp",
+                    "sourceAddressPrefix": "",
+                    "sourceAddressPrefixes": null,
+                    "sourceApplicationSecurityGroups": [
+                        "APP1_UI"
+                    ],
+                    "sourcePortRange": "*",
+                    "sourcePortRanges": null,
+                    "destinationAddressPrefix": "",
+                    "destinationAddressPrefixes": null,
+                    "destinationApplicationSecurityGroups": [
+                        "APP1_APP"
+                    ],
+                    "destinationPortRange": "",
+                    "destinationPortRanges": [
+                        "443"
+                    ]
+                },
+                {
+                    "name": "O-L-App_Layer-Database_Layer-T",
+                    "description": "Allow SQL Server Outbound from App Layer to UI Layer.",
+                    "priority": 2100,
+                    "access": "Allow",
+                    "direction": "Outbound",
+                    "protocol": "Tcp",
+                    "sourceAddressPrefix": "",
+                    "sourceAddressPrefixes": null,
+                    "sourceApplicationSecurityGroups": [
+                        "APP1_APP"
+                    ],
+                    "sourcePortRange": "*",
+                    "sourcePortRanges": null,
+                    "destinationAddressPrefix": "",
+                    "destinationAddressPrefixes": null,
+                    "destinationApplicationSecurityGroups": [
+                        "APP1_DATA"
+                    ],
+                    "destinationPortRange": "",
+                    "destinationPortRanges": [
+                        "1433"
+                    ]
+                }
+            ]
         }
-      ]
     }
-  }
 }

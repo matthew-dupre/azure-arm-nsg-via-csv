@@ -1,375 +1,375 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-  "contentVersion": "1.0.0.0",
-  "parameters": {
-    "nsgName": {
-      "type": "String",
-      "metadata": {
-        "description": "Name of the NSG Resource."
-      }
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "nsgName": {
+            "type": "String",
+            "metadata": {
+                "description": "Name of the NSG Resource."
+            }
+        },
+        "networkInfo": {
+            "defaultValue": {
+                "vnetName": "",
+                "subnetName": "",
+                "subnetAddressPrefix": ""
+            },
+            "type": "object"
+        },
+        "applicationSecurityGroups": {
+            "type": "array",
+            "defaultValue": [],
+            "metadata": {
+                "description": "List of application security groups to create. Only supply the unique portion of the name without leading or trailing '-'. Objects: {'name': 'value', 'description': 'value' }"
+            }
+        },
+        "networkSecurityGroupSecurityRules": {
+            "type": "array",
+            "defaultValue": [],
+            "metadata": {
+                "description": "List of Network Security Group Rules. These rules are combined with the baseline rules contained in the template. Objects: Format is NSG Object Format. Special handling is used for Application Security Groups so provide the unique portion of the name only."
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location for all resources."
+            }
+        }
     },
-    "networkInfo": {
-      "defaultValue": {
-        "vnetName": "",
-        "subnetName": "",
-        "subnetAddressPrefix": ""
-      },
-      "type": "object"
-    },
-    "applicationSecurityGroups": {
-      "type": "array",
-      "defaultValue": [],
-      "metadata": {
-        "description": "List of application security groups to create. Only supply the unique portion of the name without leading or trailing '-'. Objects: {'name': 'value', 'description': 'value' }"
-      }
-    },
-    "networkSecurityGroupSecurityRules": {
-      "type": "array",
-      "defaultValue": [],
-      "metadata": {
-        "description": "List of Network Security Group Rules. These rules are combined with the baseline rules contained in the template. Objects: Format is NSG Object Format. Special handling is used for Application Security Groups so provide the unique portion of the name only."
-      }
-    },
-    "location": {
-      "type": "string",
-      "defaultValue": "[resourceGroup().location]",
-      "metadata": {
-        "description": "Location for all resources."
-      }
-    }
-  },
-  "functions": [
-    {
-      "namespace": "nsg",
-      "members": {
-        "buildAsgName": {
-          "parameters": [
+    "functions": [
+        {
+            "namespace": "nsg",
+            "members": {
+                "buildAsgName": {
+                    "parameters": [
+                        {
+                            "name": "asgNameUniqueSegment",
+                            "type": "string"
+                        },
+                        {
+                            "name": "vnetName",
+                            "type": "string"
+                        }
+                    ],
+                    "output": {
+                        "type": "string",
+                        "value": "[concat(parameters('vnetName'), '-', parameters('asgNameUniqueSegment'),'-ASG')]"
+                    }
+                },
+                "buildAsgId": {
+                    "parameters": [
+                        {
+                            "name": "asgName",
+                            "type": "string"
+                        }
+                    ],
+                    "output": {
+                        "type": "string",
+                        "value": "[resourceId('Microsoft.Network/applicationSecurityGroups', parameters('asgName'))]"
+                    }
+                },
+                "buildAsgArray": {
+                    "parameters": [
+                        {
+                            "name": "asgId",
+                            "type": "string"
+                        }
+                    ],
+                    "output": {
+                        "type": "array",
+                        "value": [
+                            {
+                                "id": "[parameters('asgId')]"
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    ],
+    "variables": {
+        "baselineApplicationSecurityGroups": [
             {
-              "name": "asgNameUniqueSegment",
-              "type": "string"
+                "name": "WINDOWS",
+                "description": "Windows Servers Application Security Group"
             },
             {
-              "name": "vnetName",
-              "type": "string"
+                "name": "HTTP",
+                "description": "Http/Https Servers Application Security Group"
             }
-          ],
-          "output": {
-            "type": "string",
-            "value": "[concat(parameters('vnetName'), '-', parameters('asgNameUniqueSegment'),'-asg')]"
-          }
-        },
-        "buildAsgId": {
-          "parameters": [
-            {
-              "name": "asgName",
-              "type": "string"
-            }
-          ],
-          "output": {
-            "type": "string",
-            "value": "[resourceId('Microsoft.Network/applicationSecurityGroups', parameters('asgName'))]"
-          }
-        },
-        "buildAsgArray": {
-          "parameters": [
-            {
-              "name": "asgId",
-              "type": "string"
-            }
-          ],
-          "output": {
-            "type": "array",
-            "value": [
-              {
-                "id": "[parameters('asgId')]"
-              }
+        ],
+        "allApplicationSecurityGroups": "[concat(variables('baselineApplicationSecurityGroups'), parameters('applicationSecurityGroups'))]",
+        "securityRules": {
+            "copy": [
+                {
+                    "name": "rulesArray",
+                    "count": "[length(variables('allNsgSecurityRules'))]",
+                    "input": {
+                        "name": "[variables('allNsgSecurityRules')[copyIndex('rulesArray')].name]",
+                        "properties": {
+                            "description": "[if(empty(variables('allNsgSecurityRules')[copyIndex('rulesArray')]['description']), json('null'), variables('allNsgSecurityRules')[copyIndex('rulesArray')]['description'])]",
+                            "priority": "[variables('allNsgSecurityRules')[copyIndex('rulesArray')]['priority']]",
+                            "access": "[if(empty(variables('allNsgSecurityRules')[copyIndex('rulesArray')]['access']), json('null'),variables('allNsgSecurityRules')[copyIndex('rulesArray')]['access'])]",
+                            "direction": "[if(empty(variables('allNsgSecurityRules')[copyIndex('rulesArray')]['direction']), json('null'),variables('allNsgSecurityRules')[copyIndex('rulesArray')]['direction'])]",
+                            "protocol": "[if(empty(variables('allNsgSecurityRules')[copyIndex('rulesArray')]['protocol']), json('null'),variables('allNsgSecurityRules')[copyIndex('rulesArray')]['protocol'])]",
+                            "sourceAddressPrefix": "[if(not(contains(variables('allNsgSecurityRules')[copyIndex('rulesArray')], 'sourceAddressPrefix')), json('null'), variables('allNsgSecurityRules')[copyIndex('rulesArray')]['sourceAddressPrefix'])]",
+                            "sourceAddressPrefixes": "[if(empty(variables('allNsgSecurityRules')[copyIndex('rulesArray')]['sourceAddressPrefixes']), json('[]'), variables('allNsgSecurityRules')[copyIndex('rulesArray')]['sourceAddressPrefixes'])]",
+                            "sourceApplicationSecurityGroups": "[if(empty(variables('allNsgSecurityRules')[copyIndex('rulesArray')]['sourceApplicationSecurityGroups']), json('[]'), if(greater(length(variables('allNsgSecurityRules')[copyIndex('rulesArray')].sourceApplicationSecurityGroups), 0), nsg.buildAsgArray(nsg.buildAsgId(nsg.buildAsgName(variables('allNsgSecurityRules')[copyIndex('rulesArray')].sourceApplicationSecurityGroups[0], parameters('networkInfo').vnetName))), ''))]",
+                            "sourcePortRange": "[if(not(contains(variables('allNsgSecurityRules')[copyIndex('rulesArray')], 'sourcePortRange')), json('null'), variables('allNsgSecurityRules')[copyIndex('rulesArray')]['sourcePortRange'])]",
+                            "sourcePortRanges": "[if(not(contains(variables('allNsgSecurityRules')[copyIndex('rulesArray')], 'sourcePortRanges')), json('[]'), variables('allNsgSecurityRules')[copyIndex('rulesArray')]['sourcePortRanges'])]",
+                            "destinationAddressPrefix": "[if(not(contains(variables('allNsgSecurityRules')[copyIndex('rulesArray')], 'destinationAddressPrefix')), json('null'), variables('allNsgSecurityRules')[copyIndex('rulesArray')]['destinationAddressPrefix'])]",
+                            "destinationAddressPrefixes": "[if(not(contains(variables('allNsgSecurityRules')[copyIndex('rulesArray')], 'destinationAddressPrefixes')), json('[]'), variables('allNsgSecurityRules')[copyIndex('rulesArray')]['destinationAddressPrefixes'])]",
+                            "destinationApplicationSecurityGroups": "[if(empty(variables('allNsgSecurityRules')[copyIndex('rulesArray')]['destinationApplicationSecurityGroups']), json('[]'), if(greater(length(variables('allNsgSecurityRules')[copyIndex('rulesArray')].destinationApplicationSecurityGroups), 0), nsg.buildAsgArray(nsg.buildAsgId(nsg.buildAsgName(variables('allNsgSecurityRules')[copyIndex('rulesArray')].destinationApplicationSecurityGroups[0], parameters('networkInfo').vnetName))), ''))]",
+                            "destinationPortRange": "[if(not(contains(variables('allNsgSecurityRules')[copyIndex('rulesArray')], 'destinationPortRange')), json('null'), variables('allNsgSecurityRules')[copyIndex('rulesArray')]['destinationPortRange'])]",
+                            "destinationPortRanges": "[if(not(contains(variables('allNsgSecurityRules')[copyIndex('rulesArray')], 'destinationPortRanges')), json('[]'), variables('allNsgSecurityRules')[copyIndex('rulesArray')]['destinationPortRanges'])]"
+                        }
+                    }
+                }
             ]
-          }
-        }
-      }
-    }
-  ],
-  "variables": {
-    "baselineApplicationSecurityGroups": [
-      {
-        "name": "windows",
-        "description": "Windows Servers Application Security Group"
-      },
-      {
-        "name": "http",
-        "description": "Http/Https Servers Application Security Group"
-      }
-    ],
-    "allApplicationSecurityGroups": "[concat(variables('baselineApplicationSecurityGroups'), parameters('applicationSecurityGroups'))]",
-    "securityRules": {
-      "copy": [
+        },
+        "nsgSecurityRules": {
+            "baseline": [
+                {
+                    "name": "I-B-AzureLoadBalancer_HttpHttps-HttpASG-T",
+                    "description": "Allow HTTP + HTTPS traffic inbound from Azure Load Balancers. This shows use of Service Tags",
+                    "priority": 1110,
+                    "access": "Allow",
+                    "direction": "Inbound",
+                    "protocol": "Tcp",
+                    "sourceAddressPrefix": "AzureLoadBalancer",
+                    "sourceAddressPrefixes": null,
+                    "sourceApplicationSecurityGroups": null,
+                    "sourcePortRange": "*",
+                    "sourcePortRanges": null,
+                    "destinationAddressPrefix": "",
+                    "destinationAddressPrefixes": null,
+                    "destinationApplicationSecurityGroups": [
+                        "http"
+                    ],
+                    "destinationPortRange": "",
+                    "destinationPortRanges": [
+                        "80",
+                        "443"
+                    ]
+                },
+                {
+                    "name": "I-B-WindowsGateways-WindowsASG-T",
+                    "description": "Allow RDP traffic from gateways",
+                    "priority": 1122,
+                    "access": "Allow",
+                    "direction": "Inbound",
+                    "protocol": "Tcp",
+                    "sourceAddressPrefix": "",
+                    "sourceAddressPrefixes": [
+                        "10.0.5.0/24",
+                        "10.110.5.0/24"
+                    ],
+                    "sourceApplicationSecurityGroups": null,
+                    "sourcePortRange": "*",
+                    "sourcePortRanges": null,
+                    "destinationAddressPrefix": "",
+                    "destinationAddressPrefixes": null,
+                    "destinationApplicationSecurityGroups": [
+                        "windows"
+                    ],
+                    "destinationPortRange": "",
+                    "destinationPortRanges": [
+                        "3389"
+                    ]
+                },
+                {
+                    "name": "I-B-DenyVnetInbound-A",
+                    "description": "Deny inbound traffic from all VMs in VNET. Switch to a Default Deny posture. This overrides a default rule.",
+                    "priority": 4000,
+                    "access": "Deny",
+                    "direction": "Inbound",
+                    "protocol": "*",
+                    "sourceAddressPrefix": "VirtualNetwork",
+                    "sourceAddressPrefixes": null,
+                    "sourceApplicationSecurityGroups": null,
+                    "sourcePortRange": "*",
+                    "sourcePortRanges": null,
+                    "destinationAddressPrefix": "VirtualNetwork",
+                    "destinationAddressPrefixes": null,
+                    "destinationApplicationSecurityGroups": null,
+                    "destinationPortRange": "*",
+                    "destinationPortRanges": null
+                },
+                {
+                    "name": "O-B-VNET-DNS-A",
+                    "description": "Access to Internal DNS Servers",
+                    "priority": 1100,
+                    "access": "Allow",
+                    "direction": "Outbound",
+                    "protocol": "*",
+                    "sourceAddressPrefix": "*",
+                    "sourceAddressPrefixes": null,
+                    "sourceApplicationSecurityGroups": null,
+                    "sourcePortRange": "*",
+                    "sourcePortRanges": null,
+                    "destinationAddressPrefix": "",
+                    "destinationAddressPrefixes": [
+                        "10.0.3.0/30",
+                        "10.100.3.0/30"
+                    ],
+                    "destinationApplicationSecurityGroups": null,
+                    "destinationPortRange": "",
+                    "destinationPortRanges": [
+                        "53",
+                        "123"
+                    ]
+                },
+                {
+                    "name": "O-B-WindowsASG-DomainControllers-T",
+                    "description": "Access to AD from Windows Machines over TCP. Port ranges are incomplete.",
+                    "priority": 1195,
+                    "access": "Allow",
+                    "direction": "Outbound",
+                    "protocol": "Tcp",
+                    "sourceAddressPrefix": "",
+                    "sourceAddressPrefixes": null,
+                    "sourceApplicationSecurityGroups": [
+                        "windows"
+                    ],
+                    "sourcePortRange": "*",
+                    "sourcePortRanges": null,
+                    "destinationAddressPrefix": "",
+                    "destinationAddressPrefixes": [
+                        "10.0.2.0/30",
+                        "10.100.2.0/30"
+                    ],
+                    "destinationApplicationSecurityGroups": null,
+                    "destinationPortRange": "",
+                    "destinationPortRanges": [
+                        "53",
+                        "88",
+                        "135",
+                        "139",
+                        "389",
+                        "445"
+                    ]
+                },
+                {
+                    "name": "O-B-WindowsASG-DomainControllers-U",
+                    "description": "Access to AD from Windows Machines over UDP. Port ranges are incomplete.",
+                    "priority": 1196,
+                    "access": "Allow",
+                    "direction": "Outbound",
+                    "protocol": "Udp",
+                    "sourceAddressPrefix": "",
+                    "sourceAddressPrefixes": null,
+                    "sourceApplicationSecurityGroups": [
+                        "windows"
+                    ],
+                    "sourcePortRange": "*",
+                    "sourcePortRanges": null,
+                    "destinationAddressPrefix": "",
+                    "destinationAddressPrefixes": [
+                        "10.0.2.0/30",
+                        "10.100.2.0/30"
+                    ],
+                    "destinationApplicationSecurityGroups": null,
+                    "destinationPortRange": "",
+                    "destinationPortRanges": [
+                        "53",
+                        "88",
+                        "123",
+                        "137-138",
+                        "389"
+                    ]
+                },
+                {
+                    "name": "O-B-WindowsASG-DomainControllers-I",
+                    "description": "Access to AD from Windows Machines over ICMP",
+                    "priority": 1197,
+                    "access": "Allow",
+                    "direction": "Outbound",
+                    "protocol": "Icmp",
+                    "sourceAddressPrefix": "",
+                    "sourceAddressPrefixes": null,
+                    "sourceApplicationSecurityGroups": [
+                        "windows"
+                    ],
+                    "sourcePortRange": "*",
+                    "sourcePortRanges": null,
+                    "destinationAddressPrefix": "",
+                    "destinationAddressPrefixes": [
+                        "10.0.2.0/30",
+                        "10.100.2.0/30"
+                    ],
+                    "destinationApplicationSecurityGroups": null,
+                    "destinationPortRange": "*",
+                    "destinationPortRanges": null
+                },
+                {
+                    "name": "O-B-DenyVnetOutBound-A",
+                    "description": "Deny outbound traffic from all VMs to all VMs in VNET. Switch to Default Deny posture. This overrides a default rule",
+                    "priority": 4000,
+                    "access": "Deny",
+                    "direction": "Outbound",
+                    "protocol": "*",
+                    "sourceAddressPrefix": "VirtualNetwork",
+                    "sourceAddressPrefixes": null,
+                    "sourceApplicationSecurityGroups": null,
+                    "sourcePortRange": "*",
+                    "sourcePortRanges": null,
+                    "destinationAddressPrefix": "VirtualNetwork",
+                    "destinationAddressPrefixes": null,
+                    "destinationApplicationSecurityGroups": null,
+                    "destinationPortRange": "*",
+                    "destinationPortRanges": null
+                },
+                {
+                    "name": "O-B-DenyInternetOutbound-A",
+                    "description": "Deny outbound traffic from all VMs to Internet. Switch to Default Deny posture. This overrides a default rule that allows this traffic",
+                    "priority": 4001,
+                    "access": "Deny",
+                    "direction": "Outbound",
+                    "protocol": "*",
+                    "sourceAddressPrefix": "*",
+                    "sourceAddressPrefixes": null,
+                    "sourceApplicationSecurityGroups": null,
+                    "sourcePortRange": "*",
+                    "sourcePortRanges": null,
+                    "destinationAddressPrefix": "*",
+                    "destinationAddressPrefixes": null,
+                    "destinationApplicationSecurityGroups": null,
+                    "destinationPortRange": "*",
+                    "destinationPortRanges": null
+                }
+            ]
+        },
+        "nsgSecurityRulesSubnetBaseline": "[if(contains(variables('nsgSecurityRules'), parameters('networkInfo').subnetName), variables('nsgSecurityRules')[parameters('networkInfo').subnetName], json('[]'))]",
+        "allNsgSecurityRules": "[concat(variables('nsgSecurityRules').baseline, variables('nsgSecurityRulesSubnetBaseline'), parameters('networkSecurityGroupSecurityRules'))]"
+    },
+    "resources": [
         {
-          "name": "rulesArray",
-          "count": "[length(variables('allNsgSecurityRules'))]",
-          "input": {
-            "name": "[variables('allNsgSecurityRules')[copyIndex('rulesArray')].name]",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2019-04-01",
+            "name": "[parameters('nsgName')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "applicationSecurityGroupCopy"
+            ],
             "properties": {
-              "description": "[if(empty(variables('allNsgSecurityRules')[copyIndex('rulesArray')]['description']), json('null'), variables('allNsgSecurityRules')[copyIndex('rulesArray')]['description'])]",
-              "priority": "[variables('allNsgSecurityRules')[copyIndex('rulesArray')]['priority']]",
-              "access": "[if(empty(variables('allNsgSecurityRules')[copyIndex('rulesArray')]['access']), json('null'),variables('allNsgSecurityRules')[copyIndex('rulesArray')]['access'])]",
-              "direction": "[if(empty(variables('allNsgSecurityRules')[copyIndex('rulesArray')]['direction']), json('null'),variables('allNsgSecurityRules')[copyIndex('rulesArray')]['direction'])]",
-              "protocol": "[if(empty(variables('allNsgSecurityRules')[copyIndex('rulesArray')]['protocol']), json('null'),variables('allNsgSecurityRules')[copyIndex('rulesArray')]['protocol'])]",
-              "sourceAddressPrefix": "[if(not(contains(variables('allNsgSecurityRules')[copyIndex('rulesArray')], 'sourceAddressPrefix')), json('null'), variables('allNsgSecurityRules')[copyIndex('rulesArray')]['sourceAddressPrefix'])]",
-              "sourceAddressPrefixes": "[if(empty(variables('allNsgSecurityRules')[copyIndex('rulesArray')]['sourceAddressPrefixes']), json('[]'), variables('allNsgSecurityRules')[copyIndex('rulesArray')]['sourceAddressPrefixes'])]",
-              "sourceApplicationSecurityGroups": "[if(empty(variables('allNsgSecurityRules')[copyIndex('rulesArray')]['sourceApplicationSecurityGroups']), json('[]'), if(greater(length(variables('allNsgSecurityRules')[copyIndex('rulesArray')].sourceApplicationSecurityGroups), 0), nsg.buildAsgArray(nsg.buildAsgId(nsg.buildAsgName(variables('allNsgSecurityRules')[copyIndex('rulesArray')].sourceApplicationSecurityGroups[0], parameters('networkInfo').vnetName))), ''))]",
-              "sourcePortRange": "[if(not(contains(variables('allNsgSecurityRules')[copyIndex('rulesArray')], 'sourcePortRange')), json('null'), variables('allNsgSecurityRules')[copyIndex('rulesArray')]['sourcePortRange'])]",
-              "sourcePortRanges": "[if(not(contains(variables('allNsgSecurityRules')[copyIndex('rulesArray')], 'sourcePortRanges')), json('[]'), variables('allNsgSecurityRules')[copyIndex('rulesArray')]['sourcePortRanges'])]",
-              "destinationAddressPrefix": "[if(not(contains(variables('allNsgSecurityRules')[copyIndex('rulesArray')], 'destinationAddressPrefix')), json('null'), variables('allNsgSecurityRules')[copyIndex('rulesArray')]['destinationAddressPrefix'])]",
-              "destinationAddressPrefixes": "[if(not(contains(variables('allNsgSecurityRules')[copyIndex('rulesArray')], 'destinationAddressPrefixes')), json('[]'), variables('allNsgSecurityRules')[copyIndex('rulesArray')]['destinationAddressPrefixes'])]",
-              "destinationApplicationSecurityGroups": "[if(empty(variables('allNsgSecurityRules')[copyIndex('rulesArray')]['destinationApplicationSecurityGroups']), json('[]'), if(greater(length(variables('allNsgSecurityRules')[copyIndex('rulesArray')].destinationApplicationSecurityGroups), 0), nsg.buildAsgArray(nsg.buildAsgId(nsg.buildAsgName(variables('allNsgSecurityRules')[copyIndex('rulesArray')].destinationApplicationSecurityGroups[0], parameters('networkInfo').vnetName))), ''))]",
-              "destinationPortRange": "[if(not(contains(variables('allNsgSecurityRules')[copyIndex('rulesArray')], 'destinationPortRange')), json('null'), variables('allNsgSecurityRules')[copyIndex('rulesArray')]['destinationPortRange'])]",
-              "destinationPortRanges": "[if(not(contains(variables('allNsgSecurityRules')[copyIndex('rulesArray')], 'destinationPortRanges')), json('[]'), variables('allNsgSecurityRules')[copyIndex('rulesArray')]['destinationPortRanges'])]"
+                "securityRules": "[variables('securityRules').rulesArray]"
             }
-          }
+        },
+        {
+            "condition": "[greater(length(variables('allApplicationSecurityGroups')), 0)]",
+            "comments": "[if(equals(length(variables('allApplicationSecurityGroups')), 0), 'none', variables('allApplicationSecurityGroups'))[copyIndex()].description]",
+            "name": "[if(equals(length(variables('allApplicationSecurityGroups')), 0), 'none', nsg.buildAsgName(variables('allApplicationSecurityGroups')[copyIndex()].name, parameters('networkInfo').vnetName))]",
+            "type": "Microsoft.Network/applicationSecurityGroups",
+            "apiVersion": "2017-10-01",
+            "location": "[parameters('location')]",
+            "properties": {},
+            "copy": {
+                "name": "applicationSecurityGroupCopy",
+                "count": "[length(variables('allApplicationSecurityGroups'))]"
+            }
         }
-      ]
-    },
-    "nsgSecurityRules": {
-      "baseline": [
-        {
-          "name": "I-B-AzureLoadBalancer_HttpHttps-HttpASG-T",
-          "description": "Allow HTTP + HTTPS traffic inbound from Azure Load Balancers. This shows use of Service Tags",
-          "priority": 1110,
-          "access": "Allow",
-          "direction": "Inbound",
-          "protocol": "Tcp",
-          "sourceAddressPrefix": "AzureLoadBalancer",
-          "sourceAddressPrefixes": null,
-          "sourceApplicationSecurityGroups": null,
-          "sourcePortRange": "*",
-          "sourcePortRanges": null,
-          "destinationAddressPrefix": "",
-          "destinationAddressPrefixes": null,
-          "destinationApplicationSecurityGroups": [
-            "http"
-          ],
-          "destinationPortRange": "",
-          "destinationPortRanges": [
-            "80",
-            "443"
-          ]
-        },
-        {
-          "name": "I-B-WindowsGateways-WindowsASG-T",
-          "description": "Allow RDP traffic from gateways",
-          "priority": 1122,
-          "access": "Allow",
-          "direction": "Inbound",
-          "protocol": "Tcp",
-          "sourceAddressPrefix": "",
-          "sourceAddressPrefixes": [
-            "10.0.5.0/24",
-            "10.110.5.0/24"
-          ],
-          "sourceApplicationSecurityGroups": null,
-          "sourcePortRange": "*",
-          "sourcePortRanges": null,
-          "destinationAddressPrefix": "",
-          "destinationAddressPrefixes": null,
-          "destinationApplicationSecurityGroups": [
-            "windows"
-          ],
-          "destinationPortRange": "",
-          "destinationPortRanges": [
-            "3389"
-          ]
-        },
-        {
-          "name": "I-B-DenyVnetInbound-A",
-          "description": "Deny inbound traffic from all VMs in VNET. Switch to a Default Deny posture. This overrides a default rule.",
-          "priority": 4000,
-          "access": "Deny",
-          "direction": "Inbound",
-          "protocol": "*",
-          "sourceAddressPrefix": "VirtualNetwork",
-          "sourceAddressPrefixes": null,
-          "sourceApplicationSecurityGroups": null,
-          "sourcePortRange": "*",
-          "sourcePortRanges": null,
-          "destinationAddressPrefix": "VirtualNetwork",
-          "destinationAddressPrefixes": null,
-          "destinationApplicationSecurityGroups": null,
-          "destinationPortRange": "*",
-          "destinationPortRanges": null
-        },
-        {
-          "name": "O-B-VNET-DNS-A",
-          "description": "Access to Internal DNS Servers",
-          "priority": 1100,
-          "access": "Allow",
-          "direction": "Outbound",
-          "protocol": "*",
-          "sourceAddressPrefix": "*",
-          "sourceAddressPrefixes": null,
-          "sourceApplicationSecurityGroups": null,
-          "sourcePortRange": "*",
-          "sourcePortRanges": null,
-          "destinationAddressPrefix": "",
-          "destinationAddressPrefixes": [
-            "10.0.3.0/30",
-            "10.100.3.0/30"
-          ],
-          "destinationApplicationSecurityGroups": null,
-          "destinationPortRange": "",
-          "destinationPortRanges": [
-            "53",
-            "123"
-          ]
-        },
-        {
-          "name": "O-B-WindowsASG-DomainControllers-T",
-          "description": "Access to AD from Windows Machines over TCP. Port ranges are incomplete.",
-          "priority": 1195,
-          "access": "Allow",
-          "direction": "Outbound",
-          "protocol": "Tcp",
-          "sourceAddressPrefix": "",
-          "sourceAddressPrefixes": null,
-          "sourceApplicationSecurityGroups": [
-            "windows"
-          ],
-          "sourcePortRange": "*",
-          "sourcePortRanges": null,
-          "destinationAddressPrefix": "",
-          "destinationAddressPrefixes": [
-            "10.0.2.0/30",
-            "10.100.2.0/30"
-          ],
-          "destinationApplicationSecurityGroups": null,
-          "destinationPortRange": "",
-          "destinationPortRanges": [
-            "53",
-            "88",
-            "135",
-            "139",
-            "389",
-            "445"
-          ]
-        },
-        {
-          "name": "O-B-WindowsASG-DomainControllers-U",
-          "description": "Access to AD from Windows Machines over UDP. Port ranges are incomplete.",
-          "priority": 1196,
-          "access": "Allow",
-          "direction": "Outbound",
-          "protocol": "Udp",
-          "sourceAddressPrefix": "",
-          "sourceAddressPrefixes": null,
-          "sourceApplicationSecurityGroups": [
-            "windows"
-          ],
-          "sourcePortRange": "*",
-          "sourcePortRanges": null,
-          "destinationAddressPrefix": "",
-          "destinationAddressPrefixes": [
-            "10.0.2.0/30",
-            "10.100.2.0/30"
-          ],
-          "destinationApplicationSecurityGroups": null,
-          "destinationPortRange": "",
-          "destinationPortRanges": [
-            "53",
-            "88",
-            "123",
-            "137-138",
-            "389"
-          ]
-        },
-        {
-          "name": "O-B-WindowsASG-DomainControllers-I",
-          "description": "Access to AD from Windows Machines over ICMP",
-          "priority": 1197,
-          "access": "Allow",
-          "direction": "Outbound",
-          "protocol": "Icmp",
-          "sourceAddressPrefix": "",
-          "sourceAddressPrefixes": null,
-          "sourceApplicationSecurityGroups": [
-            "windows"
-          ],
-          "sourcePortRange": "*",
-          "sourcePortRanges": null,
-          "destinationAddressPrefix": "",
-          "destinationAddressPrefixes": [
-            "10.0.2.0/30",
-            "10.100.2.0/30"
-          ],
-          "destinationApplicationSecurityGroups": null,
-          "destinationPortRange": "*",
-          "destinationPortRanges": null
-        },
-        {
-          "name": "O-B-DenyVnetOutBound-A",
-          "description": "Deny outbound traffic from all VMs to all VMs in VNET. Switch to Default Deny posture. This overrides a default rule",
-          "priority": 4000,
-          "access": "Deny",
-          "direction": "Outbound",
-          "protocol": "*",
-          "sourceAddressPrefix": "VirtualNetwork",
-          "sourceAddressPrefixes": null,
-          "sourceApplicationSecurityGroups": null,
-          "sourcePortRange": "*",
-          "sourcePortRanges": null,
-          "destinationAddressPrefix": "VirtualNetwork",
-          "destinationAddressPrefixes": null,
-          "destinationApplicationSecurityGroups": null,
-          "destinationPortRange": "*",
-          "destinationPortRanges": null
-        },
-        {
-          "name": "O-B-DenyInternetOutbound-A",
-          "description": "Deny outbound traffic from all VMs to Internet. Switch to Default Deny posture. This overrides a default rule that allows this traffic",
-          "priority": 4001,
-          "access": "Deny",
-          "direction": "Outbound",
-          "protocol": "*",
-          "sourceAddressPrefix": "*",
-          "sourceAddressPrefixes": null,
-          "sourceApplicationSecurityGroups": null,
-          "sourcePortRange": "*",
-          "sourcePortRanges": null,
-          "destinationAddressPrefix": "*",
-          "destinationAddressPrefixes": null,
-          "destinationApplicationSecurityGroups": null,
-          "destinationPortRange": "*",
-          "destinationPortRanges": null
-        }
-      ]
-    },
-    "nsgSecurityRulesSubnetBaseline": "[if(contains(variables('nsgSecurityRules'), parameters('networkInfo').subnetName), variables('nsgSecurityRules')[parameters('networkInfo').subnetName], json('[]'))]",
-    "allNsgSecurityRules": "[concat(variables('nsgSecurityRules').baseline, variables('nsgSecurityRulesSubnetBaseline'), parameters('networkSecurityGroupSecurityRules'))]"
-  },
-  "resources": [
-    {
-      "type": "Microsoft.Network/networkSecurityGroups",
-      "apiVersion": "2019-04-01",
-      "name": "[parameters('nsgName')]",
-      "location": "[parameters('location')]",
-      "dependsOn": [
-        "applicationSecurityGroupCopy"
-      ],
-      "properties": {
-        "securityRules": "[variables('securityRules').rulesArray]"
-      }
-    },
-    {
-      "condition": "[greater(length(variables('allApplicationSecurityGroups')), 0)]",
-      "comments": "[if(equals(length(variables('allApplicationSecurityGroups')), 0), 'none', variables('allApplicationSecurityGroups'))[copyIndex()].description]",
-      "name": "[if(equals(length(variables('allApplicationSecurityGroups')), 0), 'none', nsg.buildAsgName(variables('allApplicationSecurityGroups')[copyIndex()].name, parameters('networkInfo').vnetName))]",
-      "type": "Microsoft.Network/applicationSecurityGroups",
-      "apiVersion": "2017-10-01",
-      "location": "[parameters('location')]",
-      "properties": {},
-      "copy": {
-        "name": "applicationSecurityGroupCopy",
-        "count": "[length(variables('allApplicationSecurityGroups'))]"
-      }
-    }
-  ],
-  "outputs": {}
+    ],
+    "outputs": {}
 }
